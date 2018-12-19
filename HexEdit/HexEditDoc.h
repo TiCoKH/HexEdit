@@ -636,7 +636,7 @@ private:
 	CTime saved_ctime_;         // creation date/time of file
 	CTime saved_mtime_;         // last modification date/time of file
 	CTime saved_atime_;         // last access date/time of file
-	BYTE saved_attribute_;      // logical OR of CFile::Attribute enum values
+	DWORD saved_attribute_;     // logical OR of CFile::Attribute enum values
 
 	// file status at last mofication
 	void GetInitialStatus();

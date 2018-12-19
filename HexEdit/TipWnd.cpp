@@ -20,7 +20,6 @@
 #define LWA_ALPHA               0x00000002
 #endif
 
-int CTipWnd::m_2k = -1;
 PFSetLayeredWindowAttributes CTipWnd::m_pSLWAfunc = 0;
 #define FADE_TICK 10     // Make this bigger to fade in faster
 
@@ -48,25 +47,13 @@ CTipWnd::CTipWnd(signed char opt /*=-1*/, UINT fmt /*=DT_NOCLIP|DT_NOPREFIX|DT_E
 
 	m_in = m_out = false;
 
-	// Check if we can do transparent window
-	if (m_2k == -1)
-	{
-		OSVERSIONINFO osvi;
-		osvi.dwOSVersionInfoSize = sizeof(osvi);
-		GetVersionEx(&osvi);
-
-		// Work out if this is Windows 200 or better
-		m_2k = (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT && osvi.dwMajorVersion >= 5);
-
-		// If W2K then get pointer to SetLayeredWindowAttributes
-		HINSTANCE hh;
-		if (m_2k && (hh = ::LoadLibrary("USER32.DLL")) != HINSTANCE(0))
-			m_pSLWAfunc = (PFSetLayeredWindowAttributes)::GetProcAddress(hh, "SetLayeredWindowAttributes");
-	}
+	// If W2K then get pointer to SetLayeredWindowAttributes
+	HINSTANCE hh;
+	if ((hh = ::LoadLibrary("USER32.DLL")) != HINSTANCE(0))
+		m_pSLWAfunc = (PFSetLayeredWindowAttributes)::GetProcAddress(hh, "SetLayeredWindowAttributes");
 
 	DWORD exStyle = WS_EX_TOOLWINDOW | WS_EX_TOPMOST;
-	if (m_2k)
-		exStyle |= WS_EX_LAYERED;  // This allows a transparent window
+	exStyle |= WS_EX_LAYERED;  // This allows a transparent window
 
 	VERIFY(CreateEx(exStyle,
 					strClass, NULL,
@@ -186,7 +173,6 @@ void CTipWnd::Move(CPoint pt, bool centre /* = true */)
 
 void CTipWnd::SetAlpha(int alpha)
 {
-	ASSERT(m_2k == 0 || m_2k == 1);
 	if (m_pSLWAfunc == 0)
 		return;
 

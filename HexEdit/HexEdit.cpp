@@ -15,7 +15,7 @@
 
 #include <afxadv.h>     // for CRecentFileList
 #include <io.h>         // for _access()
-
+#include <Versionhelpers.h>
 //#include <bcghelpids.h>     // For help on customize dlg
 
 // #include <afxhtml.h>    // for CHtmlView
@@ -693,23 +693,11 @@ void CHexEditApp::InitVersionInfo()
 		free(buf);
 	}
 
-	// Getting OS version info
-	OSVERSIONINFO osvi;
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	GetVersionEx(&osvi);
-	is_nt_ = osvi.dwPlatformId == VER_PLATFORM_WIN32_NT;
-	is_xp_ = osvi.dwPlatformId == VER_PLATFORM_WIN32_NT && osvi.dwMajorVersion >= 5 && osvi.dwMinorVersion >= 1;
-	is_vista_ = osvi.dwPlatformId == VER_PLATFORM_WIN32_NT && osvi.dwMajorVersion >= 6;
-	is_win7_ = osvi.dwPlatformId == VER_PLATFORM_WIN32_NT && osvi.dwMajorVersion >= 6 && osvi.dwMinorVersion >= 1;
-
-	// Determine if multiple monitor supported (Win 98 or NT >= 5.0)
-	// Note that Windows 95 is 4.00 and Windows 98 is 4.10
-	mult_monitor_ = 
-		(osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS &&
-			 osvi.dwMajorVersion == 4 &&
-			 osvi.dwMinorVersion >= 10  ||
-			 osvi.dwMajorVersion >= 5) && ::GetSystemMetrics(SM_CMONITORS) > 1;
-//        mult_monitor_ = osvi.dwMajorVersion >= 5;
+	is_xp_ = IsWindowsXPOrGreater();
+	is_vista_ = IsWindowsVistaOrGreater();
+	is_win7_ = IsWindows7OrGreater();
+	//VS2005 drop Win NT4 support->target always Win XP or greater
+	mult_monitor_ = ::GetSystemMetrics(SM_CMONITORS) > 1;
 
 	// Check for hexedit.chm file  (USE_HTML_HELP)
 	htmlhelp_file_ = m_pszHelpFilePath;
@@ -4608,42 +4596,7 @@ BOOL SendEmail(int def_type /*=0*/, const char *def_text /*=NULL*/, const char *
 
 		// Add the system information to the email
 		text += "SYSTEM: ";
-		if (dlg.systype_.CompareNoCase("This system") == 0)
-		{
-			OSVERSIONINFO osvi;
-			osvi.dwOSVersionInfoSize = sizeof(osvi);
-			GetVersionEx(&osvi);
-
-			if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-				osvi.dwMajorVersion == 3 && osvi.dwMinorVersion >= 50)
-				text += "NT 3.5X";
-			else if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT && osvi.dwMajorVersion == 4)
-				text += "NT 4.0";
-			else if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT && 
-				osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 0)
-				text += "Windows 2000";
-			else if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT && 
-				osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 1)
-				text += "Windows XP";
-			else if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT && 
-				osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 2)
-				text += "Windows Server 2003";
-			else if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS &&
-				osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 0)
-				text += "Windows 95";
-			else if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS &&
-				osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 10)
-				text += "Windows 98";
-			else if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS &&
-				osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 90)
-				text += "Windows ME";
-			CString version_info;
-			version_info.Format("  %ld.%ld (build %ld)", (long)osvi.dwMajorVersion,
-								(long)osvi.dwMinorVersion, (long)osvi.dwBuildNumber);
-			text += version_info;
-		}
-		else
-			text += dlg.systype_;
+		text += dlg.systype_;
 
 		// Add info about the version of HexEdit and user details
 		text += "\nVERSION: ";

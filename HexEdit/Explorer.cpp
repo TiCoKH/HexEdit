@@ -1454,18 +1454,13 @@ void CHistoryShellList::OnBegindrag(NMHDR* pNMHDR, LRESULT* pResult)
 		break;
 
 	case DROPEFFECT_NONE:
-		if ((::GetVersion() & 0x80000000) == 0)  // NT family (NT4/W2K/XP etc)
+		for (std::vector<CString>::const_iterator psrc = src.begin(); psrc != src.end(); ++psrc)
 		{
-			// Under NT a move returns DROPEFFECT_NONE so we have to see if
-			// the files are still there before we know if the move went ahead.
-			for (std::vector<CString>::const_iterator psrc = src.begin(); psrc != src.end(); ++psrc)
+			if (!::PathFileExists(*psrc))
 			{
-				if (!::PathFileExists(*psrc))
-				{
-					// We found a (at least one) file is gone (presumably moved)
-					success = true;
-					break;
-				}
+				// We found a (at least one) file is gone (presumably moved)
+				success = true;
+				break;
 			}
 		}
 		break;

@@ -411,7 +411,7 @@ public:
 	}
 #endif
 
-	BOOL is_nt_;                        // Are we running under NT family? (NT/W2K/XP and later)
+	BOOL is_nt_ = TRUE;                 // VS2005 drop Win NT4 support -> target always Win XP or greater
 	BOOL is_xp_;                        // Is it XP or later?
 	BOOL is_vista_;                     // Is it Vista or later?
 	BOOL is_win7_;                      // Windows 7 or Windows Server 2008 R2 or later?

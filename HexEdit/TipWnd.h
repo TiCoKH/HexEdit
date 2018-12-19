@@ -90,7 +90,6 @@ private:
 	CRect rct_all_;
 
 	void track_mouse(unsigned long); // Turns on receipt of mouse hover/leave messages
-	static int m_2k;            // Are we using 2K or later (XP etc)?
 	static PFSetLayeredWindowAttributes m_pSLWAfunc;  // Ptr to SetLayeredWindowAttributes API function
 	int   m_alpha;              // Window transparency (0-255)
 
