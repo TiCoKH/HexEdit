@@ -97,7 +97,8 @@ const char * mpz_set_bytes(mpz_ptr p, FILE_ADDRESS addr, int count);
 inline std::istream &operator>>(std::istream &ss, __int64 &ii)
 {
 	char buf[22];
-	for (char *pp = buf; pp < buf + sizeof(buf) - 1; ++pp)
+	char *pp = buf;
+	for (; pp < buf + sizeof(buf) - 1; ++pp)
 	{
 		if (!(ss >> *pp) || !isdigit(*pp))
 		{
