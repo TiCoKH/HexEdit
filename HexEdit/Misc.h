@@ -12,6 +12,10 @@
 
 #include <istream>                  // used in << and >>
 #include <mpir.h>                   // for big integer handling (mpz_t)
+#include "iosfwd"     // for istream, ostream
+#include "xtgmath.h"  // for ceil, floor
+#include <corecrt.h>  // for time_t
+#include <stdio.h>    // for size_t, NULL, sprintf
 
 // Macros
 #define BRIGHTNESS(cc) ((GetRValue(cc)*30 + GetGValue(cc)*59 + GetBValue(cc)*11)/256)
@@ -91,8 +95,8 @@ __int64 strtoi64(const char *, int radix, const char **endptr);
 unsigned __int64 mpz_get_ui64(mpz_srcptr p);
 void mpz_set_ui64(mpz_ptr p, unsigned __int64 i);
 const char * mpz_set_bytes(mpz_ptr p, FILE_ADDRESS addr, int count);
-
-#ifndef _LONGLONG
+//  VS2017 have __int64 std stream support
+#if F // #ifndef _LONGLONG
 // This is needed since std streams don't support __int64
 inline std::istream &operator>>(std::istream &ss, __int64 &ii)
 {
