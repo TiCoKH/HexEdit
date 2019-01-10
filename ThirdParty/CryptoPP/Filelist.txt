@@ -21,10 +21,12 @@ base64.cpp
 base64.h
 basecode.cpp
 basecode.h
-bench.cpp
 bench.h
+bench1.cpp
 bench2.cpp
 bfinit.cpp
+blake2.cpp
+blake2.h
 blowfish.cpp
 blowfish.h
 blumshub.cpp
@@ -38,6 +40,8 @@ cbcmac.cpp
 cbcmac.h
 ccm.cpp
 ccm.h
+chacha.cpp
+chacha.h
 channels.cpp
 channels.h
 cmac.cpp
@@ -101,6 +105,8 @@ eprecomp.h
 esign.cpp
 esign.h
 factory.h
+fhmqv.cpp
+fhmqv.h
 files.cpp
 files.h
 filters.cpp
@@ -129,6 +135,8 @@ hex.h
 hkdf.h
 hmac.cpp
 hmac.h
+hmqv.cpp
+hmqv.h
 hrtimer.cpp
 hrtimer.h
 ida.cpp
@@ -139,6 +147,8 @@ integer.cpp
 integer.h
 iterhash.cpp
 iterhash.h
+keccak.cpp
+keccak.h
 lubyrack.h
 luc.cpp
 luc.h

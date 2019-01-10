@@ -47,6 +47,9 @@
     <ClCompile Include="bfinit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="blake2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="blowfish.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,6 +69,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ccm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="chacha.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="channels.cpp">
@@ -180,6 +186,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="iterhash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="keccak.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="luc.cpp">
@@ -435,6 +444,9 @@
     <ClInclude Include="basecode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="blake2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="blowfish.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -522,6 +534,9 @@
     <ClInclude Include="fips140.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fhmqv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="fltrimpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -555,6 +570,9 @@
     <ClInclude Include="hmac.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="hmqv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="hrtimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -568,6 +586,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="iterhash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="keccak.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lubyrack.h">
@@ -790,6 +811,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="zlib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="chacha.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
