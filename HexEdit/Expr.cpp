@@ -213,7 +213,7 @@ expr_eval::tok_t expr_eval::prec_assign(value_t &val)
 			if (vname.IsEmpty())
 				sprintf(error_buf_, "Invalid expression");
 			else
-				sprintf(error_buf_, "Unknown variable \"%.200s\"", vname);
+				sprintf(error_buf_, "Unknown variable \"%.200s\"", (char *) &vname);
 		}
 		return TOK_NONE;
 	}
@@ -3863,7 +3863,7 @@ expr_eval::tok_t expr_eval::get_next()
 			last_val_ = value_t(::strtoi64(ss, 16, &endptr));
 			if (*endptr != '\0')
 			{
-				sprintf(error_buf_, "Overflow: Hex integer \"%s\" too big", ss);
+				sprintf(error_buf_, "Overflow: Hex integer \"%s\" too big", (char *) &ss);
 				return TOK_NONE;
 			}
 		}
@@ -3916,7 +3916,7 @@ expr_eval::tok_t expr_eval::get_next()
 			last_val_ = value_t(::strtoi64(ss, const_radix_, &endptr));
 			if (*endptr != '\0')
 			{
-				sprintf(error_buf_, "Overflow: \"%s\" too big", ss);
+				sprintf(error_buf_, "Overflow: \"%s\" too big", (char *) &ss);
 				return TOK_NONE;
 			}
 		}

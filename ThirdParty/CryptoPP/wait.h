@@ -34,7 +34,7 @@
 
 // http://connect.microsoft.com/VisualStudio/feedback/details/1581706
 //   and http://github.com/weidai11/cryptopp/issues/214
-#if CRYPTOPP_MSC_VERSION == 1900
+#if CRYPTOPP_MSC_VERSION >= 1900
 # pragma warning(push)
 # pragma warning(disable: 4589)
 #endif
