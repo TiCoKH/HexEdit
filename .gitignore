@@ -33,3 +33,6 @@ HexEdit/Videos/Work/
 ThirdParty/CryptoPP/Win32/
 ThirdParty/CryptoPP/*.copied
 *.suo
+
+/HexEdit/.vs/
+/HexEdit/CodeGraphData/
