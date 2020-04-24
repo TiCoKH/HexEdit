@@ -1592,7 +1592,7 @@ BOOL CFileNC::Open( LPCTSTR filename, UINT open_flags )
 
 	GetNTAPIFuncs();
 	m_retries = -1;
-	if (theApp.is_nt_ && _tcslen(filename) > 6 && ::IsDevice(filename))
+	if (_tcslen(filename) > 6 && ::IsDevice(filename))
 		m_retries = 1;                                // +ve value is also used to indicate that this is a physical device
 
 	// Get a suitably aligned buffer
@@ -1681,23 +1681,6 @@ BOOL CFileNC::Open( LPCTSTR filename, UINT open_flags )
 		if (_tcsncmp(filename, _T("\\\\.\\Floppy"), 10) == 0)
 		{
 			// nothing here (IOCTL_DISK_GET_DRIVE_GEOMETRY works)
-		}
-		else if (theApp.is_xp_)
-		{
-			GET_LENGTH_INFORMATION gli;
-		    VERIFY((*pfDeviceIoControlFile)(m_FileHandle, 0, 0, 0, &iosb, IOCTL_DISK_GET_LENGTH_INFO, 0, 0, &gli, sizeof(gli)) == STATUS_SUCCESS);
-			m_Length = gli.Length.QuadPart;
-
-			// Now make sure we can read the last sector on CD
-			if (_tcsncmp(filename, _T("\\\\.\\CdRom"), 9) == 0)
-			{
-				// Some optical drives return a value slightly too big but using the volume size works OK
-				LARGE_INTEGER pos;
-				pos.QuadPart = m_Length - m_SectorSize;   // try reading last sector
-				NTSTATUS ns = (*pfReadFile)(m_FileHandle, 0, 0, 0, &iosb, (char *)m_Buffer, m_SectorSize, &pos, 0);
-				if (ns == STATUS_END_OF_FILE || ns == STATUS_IO_DEVICE_ERROR || ns == STATUS_NONEXISTENT_SECTOR)
-					try_vol_size = true;
-			}
 		}
 		else if (_tcsncmp(filename, _T("\\\\.\\CdRom"), 9) == 0)
 		{
@@ -2040,99 +2023,64 @@ void CFileNC::get_current()
 		m_end = m_start + m_BufferSize;  // always read in a full buffer full
 		if (m_end > GetLength()) m_end = GetLength();
 
-        if (IsDevice(m_FileName) && !theApp.is_nt_)
-        {
-			// Read the data
-			ASSERT(m_end - m_start < ULONG_MAX);
-			ASSERT(m_FileHandle != INVALID_HANDLE_VALUE && m_Buffer != NULL);
-			for (DWORD done = 0; done < m_end - m_start; done += m_SectorSize)
+		
+		// Move to the file position to read
+		LARGE_INTEGER pos;
+		pos.QuadPart = m_start;
+		if (m_retries < 0)
+			pos.LowPart = ::SetFilePointer(m_FileHandle, pos.LowPart, &pos.HighPart, FILE_BEGIN);
+		ASSERT(pos.QuadPart == m_start);
+
+		IO_STATUS_BLOCK iosb;
+
+		// Read the data
+		ASSERT(m_end - m_start < ULONG_MAX);
+		ASSERT(m_FileHandle != INVALID_HANDLE_VALUE && m_Buffer != NULL);
+		DWORD num_read;
+		for (DWORD done = 0; done < m_end - m_start; done += m_SectorSize)
+		{
+#ifdef _DEBUG
+			memset((char *)m_Buffer + done, '\xCD', m_SectorSize);  // Just in case we want to see if the buffer was changed
+#endif
+			// Read one sector at a time since if reading multiple at a time and there
+			// is an error in one then number read is always returned as zero.
+			bool ok;
+			DWORD status = NO_ERROR;
+			if (m_retries < 0)
 			{
-				__int64 sec = (m_start + done)/m_SectorSize;
-				diskio.start_sector = DWORD(sec);
-				diskio.sectors = 1;
-				diskio.buffer = DWORD((char *)m_Buffer + done);
-
-				dioc_reg.reg_ESI = 0;       // read
-				dioc_reg.reg_ECX = -1;      // always -1
-				dioc_reg.reg_EBX = DWORD(&diskio);
-				ASSERT(isalpha(m_FileName[4]));
-				dioc_reg.reg_EDX = toupper(m_FileName[4]) - 'A' + 1;
-				dioc_reg.reg_EAX = 0x7305;  // Ext_ABSDiskReadWrite
-
-				DWORD junk;
-				VERIFY(DeviceIoControl(m_FileHandle,
-									   6,            // VWIN32_DIOC_DOS_DRIVEINFO
-									   &dioc_reg, sizeof(dioc_reg),
-									   &dioc_reg, sizeof(dioc_reg),
-									   &junk,                 // # bytes returned
-									   (LPOVERLAPPED) NULL));
-				ASSERT(sizeof(dioc_reg) == junk);
-
-				if ((dioc_reg.reg_Flags & 0x0001) != 0)
+				ok = ::ReadFile(m_FileHandle, (char *)m_Buffer + done, m_SectorSize, &num_read, NULL) == TRUE;
+				if (!ok)
+					status = ::GetLastError();
+			}
+			else
+			{
+				for (int retry = 0; ; ++retry)
 				{
-					m_bad[sec] = dioc_reg.reg_EAX & 0xFFFF;  // see error nos above
+					status = (*pfReadFile)(m_FileHandle, 0, 0, 0, &iosb, (char *)m_Buffer + done, m_SectorSize, &pos, 0);
+					ok = NT_SUCCESS(status);   // TBD: TODO track errors/warnings separately?
+					num_read = ok ? m_SectorSize : 0;
+					if (ok || retry >= m_retries)
+						break;
+
+					// If we have errors make sure we don't leave data in the buffer from a previous read
+					memset((char *)m_Buffer + done, '\0', m_SectorSize);
 				}
 			}
-        }
-		else
-		{
-			// Move to the file position to read
-			LARGE_INTEGER pos;
-			pos.QuadPart = m_start;
-			if (m_retries < 0)
-				pos.LowPart = ::SetFilePointer(m_FileHandle, pos.LowPart, &pos.HighPart, FILE_BEGIN);
-			ASSERT(pos.QuadPart == m_start);
-
-			IO_STATUS_BLOCK iosb;
-
-			// Read the data
-			ASSERT(m_end - m_start < ULONG_MAX);
-			ASSERT(m_FileHandle != INVALID_HANDLE_VALUE && m_Buffer != NULL);
-			DWORD num_read;
-			for (DWORD done = 0; done < m_end - m_start; done += m_SectorSize)
+			pos.QuadPart += m_SectorSize;       // Keep track of current file position
+			if (!ok)
 			{
-#ifdef _DEBUG
-				memset((char *)m_Buffer + done, '\xCD', m_SectorSize);  // Just in case we want to see if the buffer was changed
-#endif
-				// Read one sector at a time since if reading multiple at a time and there
-				// is an error in one then number read is always returned as zero.
-				bool ok;
-				DWORD status = NO_ERROR;
+				ASSERT(status != NO_ERROR && num_read == 0);
+
+				// Flag this sector as bad and move on to the next one
+				__int64 sec = (m_start + done)/m_SectorSize;
+				m_bad[sec] = status;  // TBD: TODO translate to Windows error?
+
 				if (m_retries < 0)
-				{
-					ok = ::ReadFile(m_FileHandle, (char *)m_Buffer + done, m_SectorSize, &num_read, NULL) == TRUE;
-					if (!ok)
-						status = ::GetLastError();
-				}
-				else
-				{
-					for (int retry = 0; ; ++retry)
-					{
-						status = (*pfReadFile)(m_FileHandle, 0, 0, 0, &iosb, (char *)m_Buffer + done, m_SectorSize, &pos, 0);
-						ok = NT_SUCCESS(status);   // TBD: TODO track errors/warnings separately?
-						num_read = ok ? m_SectorSize : 0;
-						if (ok || retry >= m_retries)
-							break;
-
-						// If we have errors make sure we don't leave data in the buffer from a previous read
-						memset((char *)m_Buffer + done, '\0', m_SectorSize);
-					}
-				}
-				pos.QuadPart += m_SectorSize;       // Keep track of current file position
-				if (!ok)
-				{
-					ASSERT(status != NO_ERROR && num_read == 0);
-
-					// Flag this sector as bad and move on to the next one
-					__int64 sec = (m_start + done)/m_SectorSize;
-					m_bad[sec] = status;  // TBD: TODO translate to Windows error?
-
-					if (m_retries < 0)
-						pos.LowPart = ::SetFilePointer(m_FileHandle, pos.LowPart, &pos.HighPart, FILE_CURRENT);
-					ASSERT(pos.QuadPart == m_start + done + m_SectorSize);
-				}
+					pos.LowPart = ::SetFilePointer(m_FileHandle, pos.LowPart, &pos.HighPart, FILE_CURRENT);
+				ASSERT(pos.QuadPart == m_start + done + m_SectorSize);
 			}
 		}
+		
 	}
 }
 
@@ -2142,53 +2090,24 @@ void CFileNC::make_clean()
 	TRACE("Device WRITE non-cached\r\n");
 	ASSERT(m_dirty && m_start < m_end && (m_end-m_start)%m_SectorSize == 0);
 
-    if (IsDevice(m_FileName) && !theApp.is_nt_)
-    {
-		ASSERT(m_end - m_start < USHRT_MAX);
-		ASSERT(m_FileHandle != INVALID_HANDLE_VALUE && m_Buffer != NULL);
+	DWORD num_written;
 
-		diskio.start_sector = DWORD(m_start/m_SectorSize);
-		diskio.sectors = WORD((m_end - m_start)/m_SectorSize);
-		diskio.buffer = DWORD(m_Buffer);
+	LARGE_INTEGER pos;          // Position to write at
+	pos.QuadPart = m_start;
+	if (m_retries < 0)
+	{
+		pos.LowPart = ::SetFilePointer(m_FileHandle, pos.LowPart, &pos.HighPart, FILE_BEGIN);
+		ASSERT(pos.QuadPart == m_start);
 
-		dioc_reg.reg_EAX = 0x7305;  // Ext_ABSDiskReadWrite
-		dioc_reg.reg_EBX = DWORD(&diskio);
-		dioc_reg.reg_ECX = -1;      // always -1
-		ASSERT(isalpha(m_FileName[4]));
-		dioc_reg.reg_EDX = toupper(m_FileName[4]) - 'A' + 1;
-		dioc_reg.reg_ESI = 1;       // write (unknown/any block types)
-
-		DWORD junk;
-		VERIFY(DeviceIoControl(m_FileHandle,
-							   6,            // VWIN32_DIOC_DOS_DRIVEINFO
-							   &dioc_reg, sizeof(dioc_reg),
-							   &dioc_reg, sizeof(dioc_reg),
-							   &junk,                 // # bytes returned
-							   (LPOVERLAPPED) NULL));
-		ASSERT(sizeof(dioc_reg) == junk);
-
-		// if ((dioc_reg.reg_Flags & 0x0001) != 0) TBD: TODO handle this?
+		VERIFY(::WriteFile(m_FileHandle, m_Buffer, (DWORD)(m_end - m_start), &num_written, NULL));
+		ASSERT(num_written == (DWORD)(m_end - m_start));
 	}
 	else
 	{
-		DWORD num_written;
-
-		LARGE_INTEGER pos;          // Position to write at
-		pos.QuadPart = m_start;
-		if (m_retries < 0)
-		{
-			pos.LowPart = ::SetFilePointer(m_FileHandle, pos.LowPart, &pos.HighPart, FILE_BEGIN);
-			ASSERT(pos.QuadPart == m_start);
-
-			VERIFY(::WriteFile(m_FileHandle, m_Buffer, (DWORD)(m_end - m_start), &num_written, NULL));
-			ASSERT(num_written == (DWORD)(m_end - m_start));
-		}
-		else
-		{
-			IO_STATUS_BLOCK iosb;
-			VERIFY((*pfWriteFile)(m_FileHandle, 0, 0, 0, &iosb, (char *)m_Buffer, ULONG(m_end - m_start), &pos, 0) == STATUS_SUCCESS);
-		}
+		IO_STATUS_BLOCK iosb;
+		VERIFY((*pfWriteFile)(m_FileHandle, 0, 0, 0, &iosb, (char *)m_Buffer, ULONG(m_end - m_start), &pos, 0) == STATUS_SUCCESS);
 	}
+
 	m_dirty = false;                       // mark it clean
 }
 

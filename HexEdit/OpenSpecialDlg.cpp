@@ -359,12 +359,9 @@ BOOL COpenSpecialDlg::OnInitDialog()
 	m_hVol  = m_ctl_tree.InsertItem("Logical Volumes", IMG_DRIVES, IMG_DRIVES);
 	m_ctl_tree.SetItemData(m_hVol, (LPARAM)-1);
 	m_hPhys = 0;
-	if (theApp.is_nt_)
-	{
-		// Only allow access to physical devices under NT/2K/XP
-		m_hPhys = m_ctl_tree.InsertItem("Physical Drives", IMG_PHYS_DRIVES, IMG_PHYS_DRIVES);
-		m_ctl_tree.SetItemData(m_hPhys, (LPARAM)-1);
-	}
+	m_hPhys = m_ctl_tree.InsertItem("Physical Drives", IMG_PHYS_DRIVES, IMG_PHYS_DRIVES);
+	m_ctl_tree.SetItemData(m_hPhys, (LPARAM)-1);
+
 
 	Rebuild();                          // Add nodes for all devices
 	SetTimer(1, 5000, NULL);           // update removeable device every 5 seconds

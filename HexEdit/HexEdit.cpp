@@ -15,10 +15,6 @@
 
 #include <afxadv.h>     // for CRecentFileList
 #include <io.h>         // for _access()
-#include <Versionhelpers.h>
-//#include <bcghelpids.h>     // For help on customize dlg
-
-// #include <afxhtml.h>    // for CHtmlView
 
 #include <MAPI.h>       // for MAPI constants
 
@@ -692,11 +688,6 @@ void CHexEditApp::InitVersionInfo()
         }
         free(buf);
     }
-
-    is_xp_ = IsWindowsXPOrGreater();
-    is_vista_ = IsWindowsVistaOrGreater();
-    is_win7_ = IsWindows7OrGreater();
-    //VS2005 drop Win NT4 support->target always Win XP or greater
     mult_monitor_ = ::GetSystemMetrics(SM_CMONITORS) > 1;
 
     // Check for hexedit.chm file  (USE_HTML_HELP)
@@ -3040,24 +3031,6 @@ void CHexEditApp::LoadSchemes()
         // new_scheme.can_delete_ = TRUE;
         scheme_.push_back(new_scheme);
 
-/*  // Leave out rainbow scheme now that we have "Many" scheme
-        CScheme new_scheme2(PRETTY_NAME);
-        new_scheme2.AddRange("NullByte", RGB(254, 254, 254), "0");   // Give nul bytes their own colour (grey)
-        new_scheme2.AddRange("range1", RGB(200, 0, 0), "1:21");
-        new_scheme2.AddRange("range2", RGB(200, 100, 0), "22:42");
-        new_scheme2.AddRange("range3", RGB(200, 200, 0), "43:63");
-        new_scheme2.AddRange("range4", RGB(100, 200, 0), "64:84");
-        new_scheme2.AddRange("range5", RGB(0, 200, 0), "85:105");
-        new_scheme2.AddRange("range6", RGB(0, 200, 100), "106:127");
-        new_scheme2.AddRange("range7", RGB(0, 200, 200), "128:148");
-        new_scheme2.AddRange("range8", RGB(0, 100, 200), "149:169");
-        new_scheme2.AddRange("range9", RGB(0, 0, 200), "170:191");
-        new_scheme2.AddRange("range10", RGB(100, 0, 200), "192:212");
-        new_scheme2.AddRange("range11", RGB(200, 0, 200), "213:233");
-        new_scheme2.AddRange("range12", RGB(200, 0, 100), "234:254");
-        new_scheme2.AddRange("CatchAll", -1, "0:255"); // This should only catch 0xFF
-        scheme_.push_back(new_scheme2);
-*/
     }
     // Add multi scheme if not found
     if (!multi_found)
@@ -3134,34 +3107,6 @@ void CHexEditApp::GetXMLFileList()
         xml_file_name_.push_back(ff.GetFileTitle());
     }
 }
-
-#if 0  // replaced by schemes
-bool CHexEditApp::GetColours(const char *section, const char *key1, const char *key2,
-                const char *key3, partn &retval)
-{
-    CString name = GetProfileString(section, key1, "");
-    if (name.IsEmpty()) return false;
-
-    COLORREF colour = (COLORREF)GetProfileInt(section, key2, 0);
-    CString range = GetProfileString(section, key3, "0:255");
-
-    retval = partn(name, colour, range);
-    return true;
-}
-
-void CHexEditApp::SetColours(const char *section, const char *key1, const char *key2,
-                const char *key3, const partn &v)
-{
-    // Write the range name and RGB value
-    WriteProfileString(section, key1, v.name);
-    WriteProfileInt(section, key2, v.col);
-
-    // Convert the range itself to a string and write it
-    std::ostringstream strstr;
-    strstr << v.range;
-    WriteProfileString(section, key3, strstr.str().c_str());
-}
-#endif
 
 void CHexEditApp::OnProperties()
 {
@@ -4140,57 +4085,9 @@ BOOL CHexEditApp::backup(LPCTSTR filename, FILE_ADDRESS file_len) const
     return retval;
 }
 
-#if 0 // This dummy doc no longer needed since we no lomger use CHtmlView
-// This is all needed I think just to get a dummy document class
-class CDummyDoc : public CDocument
-{
-protected: // create from serialization only
-    CDummyDoc() {}
-    DECLARE_DYNCREATE(CDummyDoc)
-public:
-    virtual ~CDummyDoc() {}
-protected:
-    DECLARE_MESSAGE_MAP()
-};
-
-IMPLEMENT_DYNCREATE(CDummyDoc, CDocument)
-
-BEGIN_MESSAGE_MAP(CDummyDoc, CDocument)
-END_MESSAGE_MAP()
-#endif
-
 void CHexEditApp::OnHelpWeb()
 {
-#if 0  // Don't use HtmlView, just fire up browser instead
-    static CMultiDocTemplate *pDocTemplate = NULL;
-    if (pDocTemplate == NULL)
-    {
-        pDocTemplate = new CMultiDocTemplate(
-                IDR_HEXEDTYPE,
-                RUNTIME_CLASS(CDummyDoc),
-                RUNTIME_CLASS(CChildFrame), // custom MDI child frame
-                RUNTIME_CLASS(CHtmlView));
-    }
-
-    CDocument *pDoc = pDocTemplate->OpenDocumentFile(NULL);
-
-    ASSERT(pDoc != NULL);
-    if (pDoc == NULL) return;
-
-    POSITION pos = pDoc->GetFirstViewPosition();
-    if (pos != NULL)
-    {
-        CHtmlView *pView = (CHtmlView *)pDoc->GetNextView(pos);
-        ASSERT_KINDOF(CHtmlView, pView);
-
-        // Go to hexedit web site
-        CString str;
-        VERIFY(str.LoadString(IDS_WEB_HELP));
-        pView->Navigate2(str);
-    }
-#else
     ::BrowseWeb(IDS_WEB_HELP);
-#endif
 }
 
 void CHexEditApp::OnHelpWebForum()
@@ -4707,4 +4604,9 @@ BOOL SendEmail(int def_type /*=0*/, const char *def_text /*=NULL*/, const char *
     ::FreeLibrary(hmapi);
 
     return retval;
+}
+
+BOOL __stdcall AfxFullPath(LPTSTR lpszPathOut, LPCTSTR lpszFileIn)
+{
+	return 0;
 }

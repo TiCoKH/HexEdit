@@ -225,8 +225,6 @@ CGridDefaultCell::CGridDefaultCell()
 #else // not CE
     NONCLIENTMETRICS ncm;
     ncm.cbSize = sizeof(NONCLIENTMETRICS);
-	if (!theApp.is_vista_)
-		ncm.cbSize -= sizeof(ncm.iPaddedBorderWidth);
     VERIFY(SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0));
     SetFont(&(ncm.lfMessageFont));
 #endif

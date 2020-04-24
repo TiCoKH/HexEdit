@@ -498,14 +498,6 @@ void CGridCtrl2::OnLButtonUp(UINT nFlags, CPoint point)
 
 	// This is a real kludge but seems nec. under 9X
 	CCellID cell = GetCellFromPt(point);    // Work out which cell was clicked
-	if (!theApp.is_nt_ &&
-		cell.row == 0 &&
-		cell.col == GetFixedColumnCount() &&
-		m_MouseMode != MOUSE_OVER_COL_DIVIDE &&
-		m_MouseMode != MOUSE_OVER_ROW_DIVIDE)
-	{
-		m_MouseMode = MOUSE_PREPARE_EDIT;
-	}
 
 	CGridCtrl::OnLButtonUp(nFlags, point);
 

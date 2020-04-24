@@ -39,22 +39,11 @@ typedef __int64 FILE_ADDRESS;
 #define OFN_DONTADDTORECENT          0x02000000
 #endif
 
-#if 0 // ndef SM_CMONITORS
-// It seems there's a bug in winuser.h (assumed Win 98 was WIN_VER == 5 not 4.10)
-// which causes the following multiple monitor stuff not to be conditionally compiled in
-#define SM_CMONITORS            80
-#define SM_XVIRTUALSCREEN       76
-#define SM_YVIRTUALSCREEN       77
-#define SM_CXVIRTUALSCREEN      78
-#define SM_CYVIRTUALSCREEN      79
-#define SM_SAMEDISPLAYFORMAT    81
-#endif
-
 // Conditional compilation flags - always to be used
 #if _MSC_VER >= 1600        // SSE2 registers (__m128i) only added in VS2010
 #define USE_SSE2         1  // Use SSE2 (SIMD) instructions to speed up some operations
 #endif
-#define USE_OWN_PRINTDLG 1  // Replace the standard print dialog with our own derived dialog
+#define USE_OWN_PRINTDLG 0  // Replace the standard print dialog with our own derived dialog
 #define INPLACE_MOVE 1      // Writes all changes to the file in place - even when bytes inserted/deleted (so a temp file is not required)
 #define SYS_SOUNDS      1   // Use system sounds - make an option for system sounds vs internal spkr
 
@@ -120,13 +109,7 @@ struct display_bits
 	// When combined the 3 bits give these values:
 	// 0 = ASCII, 1 = ANSI, 2/3 = OEM/IBM, 4+ = EBCDIC (cf enum above)
 
-#if 0
-	unsigned int graphic: 1;    // Are graphic chars displayed?
-	unsigned int oem: 1;        // Are we showing OEM graphics?
-	unsigned int ebcdic: 1;     // Are we displaying as EBCDIC
-#else
 	unsigned int char_set: 3;   // refer to enum above (CHARSET_*)
-#endif
 
 	unsigned int autofit: 1;    // Autofit mode is on?
 	// --- 8
@@ -398,23 +381,8 @@ public:
 					   (DWORD) (LPSTR) id_pairs) == HWND(0))
 			TRACE("Failed to launch help for ID %d ($%X)\n", id, id);
 	}
-#if 0
-	BOOL HtmlHelpContextMenu(HWND hw, DWORD *id_pairs)
-	{
-		CWaitCursor wait;
-		if(::HtmlHelp(hw, htmlhelp_file_+"::/CtlIdMap.txt", HH_TP_HELP_CONTEXTMENU, (DWORD) (LPSTR) id_pairs) == HWND(0))
-		{
-			AfxMessageBox(AFX_IDP_FAILED_TO_LAUNCH_HELP);
-			return FALSE;
-		}
-		return TRUE;
-	}
-#endif
 
 	BOOL is_nt_ = TRUE;                 // VS2005 drop Win NT4 support -> target always Win XP or greater
-	BOOL is_xp_;                        // Is it XP or later?
-	BOOL is_vista_;                     // Is it Vista or later?
-	BOOL is_win7_;                      // Windows 7 or Windows Server 2008 R2 or later?
 	BOOL mult_monitor_;                 // Are we running on an OS with multiple monitor support?
 	BOOL is_us_;                        // Are we in US?  (for spelling fixes)
 

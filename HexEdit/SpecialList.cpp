@@ -443,7 +443,7 @@ void CSpecialList::bg_update(int ii)
 				m_read_only[ii] = true;
 
 			// xxx TBD TODO check this works for write-prot floppy
-			if (theApp.is_xp_ && (flags & FILE_READ_ONLY_VOLUME) != 0)
+			if ((flags & FILE_READ_ONLY_VOLUME) != 0)
 				m_read_only[ii] = true;
 			// We should do more when not under XP - eg. floppy/zip may be write-protected
 

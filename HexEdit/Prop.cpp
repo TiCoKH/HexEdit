@@ -2093,11 +2093,9 @@ void CPropCharPage::OnClose()
 		::SendMessageW(hw, WM_SETFONT, WPARAM(::GetStockObject(ANSI_VAR_FONT)), 0L);
 #endif
 
-	if (theApp.is_nt_)
-	{
-		VERIFY(DeleteObject(ufont_));
-		VERIFY(DeleteObject(nfont_));
-	}
+	VERIFY(DeleteObject(ufont_));
+	VERIFY(DeleteObject(nfont_));
+
 	//::SendMessageW(ctl_unicode_.m_hWnd, WM_SETFONT, WPARAM(::GetStockObject(ANSI_VAR_FONT)), 0L);
 
 	CPropUpdatePage::OnClose();

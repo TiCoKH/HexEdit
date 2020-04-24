@@ -2392,10 +2392,7 @@ LRESULT CExplorerWnd::OnKickIdle(WPARAM, LPARAM lCount)
 
 	m_menu_.GetSubMenu(0)->CheckMenuItem(ID_HIDDEN_HIDE, show_hidden == 0 ? MF_CHECKED : MF_UNCHECKED);
 	m_menu_.GetSubMenu(0)->CheckMenuItem(ID_HIDDEN_SHOW, show_hidden == 1 ? MF_CHECKED : MF_UNCHECKED);
-	if (!theApp.is_win7_)
-		m_menu_.GetSubMenu(0)->DeleteMenu(ID_SHOW_ALL, MF_BYCOMMAND);
-	else
-		m_menu_.GetSubMenu(0)->CheckMenuItem(ID_SHOW_ALL, show_hidden == 2 ? MF_CHECKED : MF_UNCHECKED);
+	m_menu_.GetSubMenu(0)->CheckMenuItem(ID_SHOW_ALL, show_hidden == 2 ? MF_CHECKED : MF_UNCHECKED);
 
 	build_filter_menu();
 
@@ -2547,7 +2544,7 @@ void CExplorerWnd::update_types()
 #if _MFC_VER >= 0x0A00
 	// Note that the SHCONTF_INCLUDESUPERHIDDEN option has no effect if the Windows Explorer option
 	// "Hide protected (operating system) files (Recommended)" is off since HIDDEN files are already shown
-	if (theApp.is_win7_ && show_hidden > 1)
+	if (show_hidden > 1)
 		flags |= SHCONTF_INCLUDESUPERHIDDEN;
 #endif
 

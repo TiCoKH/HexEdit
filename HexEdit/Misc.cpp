@@ -1770,9 +1770,6 @@ PFNtWriteFile pfWriteFile;
 
 void GetNTAPIFuncs()
 {
-	if (!theApp.is_nt_)
-		return;
-
 	if (hNTDLL != (HINSTANCE)0)
 		return;                 // Already done
 
